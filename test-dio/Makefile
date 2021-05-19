@@ -27,3 +27,13 @@ run:
 run-base:
 	cp esp32flash.bin--base esp32flash.bin
 	make run
+
+TAG ?= zzzz
+tgz:
+	rm -rf qemu
+	mkdir -p qemu/bin
+	cp $(QEMU) qemu/bin/  # TODO include other qemu-* files
+	mkdir -p qemu/share/qemu
+	cp ../build/pc-bios/esp32-v3-rom.bin qemu/share/qemu/
+	tar cfz qemu-$(TAG).tgz qemu
+	rm -rf qemu
