@@ -1,0 +1,29 @@
+QEMU := ../build/qemu-system-xtensa
+
+all: $(QEMU)
+
+$(QEMU):
+	# https://github.com/espressif/qemu/wiki#prerequisites
+	sudo apt install libgcrypt-dev 
+
+	# https://github.com/espressif/qemu/wiki#configure
+	cd .. && \
+		./configure --target-list=xtensa-softmmu     --enable-gcrypt     --enable-debug --enable-sanitizers     --disable-strip --disable-user     --disable-capstone --disable-vnc     --disable-sdl --disable-gtk && \
+		ninja -C build
+
+strip:
+	@echo before strip
+	ls -l $(QEMU)
+	strip $(QEMU)
+	@echo after strip
+	ls -l $(QEMU)
+
+run:
+	@echo running qemu
+	$(QEMU) -nographic -machine esp32 \
+		-drive file=./esp32flash.bin,if=mtd,format=raw \
+		-nic user,model=open_eth \
+		-global driver=timer.esp32.timg,property=wdt_disable,value=true
+run-base:
+	cp esp32flash.bin--base esp32flash.bin
+	make run
