@@ -6,10 +6,18 @@ $(QEMU):
 	# https://github.com/espressif/qemu/wiki#prerequisites
 	sudo apt install libgcrypt-dev 
 
-	# https://github.com/espressif/qemu/wiki#configure
-	cd .. && \
-		./configure --target-list=xtensa-softmmu     --enable-gcrypt     --enable-debug --enable-sanitizers     --disable-strip --disable-user     --disable-capstone --disable-vnc     --disable-sdl --disable-gtk && \
-		ninja -C build
+	#==== https://github.com/espressif/qemu/wiki#configure
+	#cd .. && ./configure --target-list=xtensa-softmmu \
+		--enable-gcrypt \
+		--enable-debug --enable-sanitizers --disable-strip \
+		--disable-user --disable-capstone \
+		--disable-vnc --disable-sdl --disable-gtk && ninja -C build
+	#==== @@ no debug stuff; no libasan; no libpulse
+	cd .. && ./configure --target-list=xtensa-softmmu \
+		--enable-gcrypt \
+		--disable-user --disable-capstone \
+		--disable-vnc --disable-sdl --disable-gtk \
+		--audio-drv-list=alsa && ninja -C build
 
 strip:
 	@echo before strip
@@ -29,10 +37,10 @@ run-base:
 	make run
 
 TAG ?= zzzz
-tgz:
+pack:
 	rm -rf qemu
 	mkdir -p qemu/bin
-	cp $(QEMU) qemu/bin/  # TODO include other qemu-* files
+	cp $(QEMU) qemu/bin/  # TODO include other qemu-* artifacts
 	mkdir -p qemu/share/qemu
 	cp ../build/pc-bios/esp32-v3-rom.bin qemu/share/qemu/
 	tar cfz qemu-$(TAG).tgz qemu
